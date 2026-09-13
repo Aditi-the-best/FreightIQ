@@ -1,3 +1,4 @@
+import { supabase } from "./supabase";
 /**
  * Real-data layer, sourced from /public/data/*.csv.
  *
@@ -99,38 +100,91 @@ async function fetchCSV(path: string): Promise<string[][]> {
 
 export async function loadVesselSnapshots(): Promise<VesselRow[]> {
   if (vesselCache) return vesselCache;
-  const rows = await fetchCSV("/data/vessel_snapshots.csv");
-  const [header, ...body] = rows;
-  const idx = (name: string) => header.indexOf(name);
-  vesselCache = body.map((r) => ({
-    snapshotDate: r[idx("snapshot_date")],
-    port: r[idx("port")]?.trim().toUpperCase(),
-    status: r[idx("status")] as VesselStatus,
-    berthName: r[idx("berth_name")] ?? "",
-    vesselName: r[idx("vessel_name")] ?? "",
-    vesselType: r[idx("vessel_type")] ?? "",
-    cargo: r[idx("cargo")] ?? "",
-    cargoCategory: r[idx("cargo_category")] ?? "",
-    quantityMts: toNumOrNull(r[idx("quantity_mts_numeric")] ?? ""),
-    direction: r[idx("direction")] ?? "",
-    arrivalOrEta: r[idx("arrival_or_eta")] ?? "",
-    berthOrEtb: r[idx("berth_or_etb")] ?? "",
-    etcOrEtcd: r[idx("etc_or_etcd")] ?? "",
+
+  if (!supabase) {
+    throw new Error(
+      "Supabase is not configured (missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)."
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("vessel_snapshots")
+    .select(
+      `
+      snapshot_date,
+      port,
+      status,
+      berth_name,
+      vessel_name,
+      vessel_type,
+      cargo,
+      cargo_category,
+      quantity_mts_numeric,
+      direction,
+      arrival_or_eta,
+      berth_or_etb,
+      etc_or_etcd
+      `
+    )
+    .order("snapshot_date", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load vessel snapshots: ${error.message}`);
+  }
+
+  vesselCache = (data ?? []).map((r) => ({
+    snapshotDate: r.snapshot_date,
+    port: r.port?.trim().toUpperCase() ?? "",
+    status: r.status as VesselStatus,
+    berthName: r.berth_name ?? "",
+    vesselName: r.vessel_name ?? "",
+    vesselType: r.vessel_type ?? "",
+    cargo: r.cargo ?? "",
+    cargoCategory: r.cargo_category ?? "",
+    quantityMts: r.quantity_mts_numeric !== null
+      ? Number(r.quantity_mts_numeric)
+      : null,
+    direction: r.direction ?? "",
+    arrivalOrEta: r.arrival_or_eta ?? "",
+    berthOrEtb: r.berth_or_etb ?? "",
+    etcOrEtcd: r.etc_or_etcd ?? "",
   }));
+
   return vesselCache;
 }
 
 export async function loadBerthOperations(): Promise<BerthRow[]> {
   if (berthCache) return berthCache;
-  const rows = await fetchCSV("/data/berth_operations.csv");
-  const [header, ...body] = rows;
-  const idx = (name: string) => header.indexOf(name);
-  berthCache = body.map((r) => ({
-    snapshotDate: r[idx("snapshot_date")],
-    port: r[idx("port")]?.trim().toUpperCase(),
-    berthName: r[idx("berth_name")] ?? "",
-    status: (r[idx("status")] ?? "").trim(),
+
+  if (!supabase) {
+    throw new Error(
+      "Supabase is not configured (missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)."
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("berth_operations")
+    .select(
+      `
+      snapshot_date,
+      port,
+      berth_name,
+      status
+      `
+    )
+    .order("snapshot_date", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to load berth operations: ${error.message}`);
+  }
+
+  berthCache = (data ?? []).map((r) => ({
+    snapshotDate: r.snapshot_date,
+    port: r.port?.trim().toUpperCase() ?? "",
+    berthName: r.berth_name ?? "",
+    status: (r.status ?? "").trim(),
   }));
+
   return berthCache;
 }
 

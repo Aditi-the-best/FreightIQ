@@ -11,6 +11,7 @@ import VesselOptimizerPage from "./pages/VesselOptimizerPage";
 import IdleAnalysisPage from "./pages/IdleAnalysisPage";
 import RiskMonitorPage from "./pages/RiskMonitorPage";
 import AnalysisHistoryPage from "./pages/AnalysisHistoryPage";
+import DataUploadPage from "./pages/DataUploadPage";
 import { type ReactNode } from "react";
 
 function Protected({ children }: { children: ReactNode }) {
@@ -39,6 +40,7 @@ function AppRoutes() {
         <Route path="idle-analysis" element={<IdleAnalysisPage />} />
         <Route path="risk-monitor" element={<RiskMonitorPage />} />
         <Route path="analysis-history" element={<AnalysisHistoryPage />} />
+        <Route path="data-upload" element={<DataUploadPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

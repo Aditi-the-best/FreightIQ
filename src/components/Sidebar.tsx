@@ -75,6 +75,26 @@ const NAV = [
       </svg>
     ),
   },
+  {
+    id: "data-upload",
+    label: "Data Upload",
+    path: "/dashboard/data-upload",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="w-4 h-4"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 16.5V3.75m0 0L7.5 8.25M12 3.75l4.5 4.5M4.5 14.25v3.375A2.625 2.625 0 007.125 20.25h9.75a2.625 2.625 0 002.625-2.625V14.25"
+        />
+      </svg>
+    ),
+  },
 ];
 
 interface SidebarProps {
